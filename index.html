@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Airline Delay Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════ UPLOAD SCREEN ═══════════════════════════ -->
+<div id="upload-screen">
+  <div class="upload-card">
+    <div class="upload-logo">✈️</div>
+    <h1>Airline Delay Intelligence</h1>
+    <p class="subtitle">Understanding Delay Drivers, Operational Impact &amp; Risk<br/>Upload your dataset to begin the analysis.</p>
+
+    <div class="upload-zone" id="upload-zone">
+      <div class="upload-icon">📂</div>
+      <p><strong>Drag &amp; drop your file here</strong></p>
+      <p>or click the button below</p>
+    </div>
+
+    <input type="file" id="file-input" accept=".xlsx,.csv" style="display:none" />
+    <button class="btn-upload" id="btn-upload-trigger">
+      <span>📤</span> Upload Dataset
+    </button>
+    <div class="upload-hint">Supports: .xlsx · .csv &nbsp;|&nbsp; Original airline delay dataset</div>
+    <div class="upload-error" id="upload-error"></div>
+    <div class="upload-spinner" id="upload-spinner"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP SHELL ════════════════════════════════ -->
+<div id="app-shell">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-icon">✈️</span>
+      <div class="brand-name">
+        <div>Airline Delay Intelligence</div>
+        <span class="brand-sub">Analytics Dashboard</span>
+      </div>
+    </div>
+
+    <div class="topbar-filters">
+
+      <!-- Year multi-select -->
+      <div class="filter-group" id="fg-year">
+        <label>Year</label>
+        <button class="ms-trigger" id="ms-year-trigger" aria-haspopup="listbox">
+          <span class="ms-label">All Years</span>
+          <span class="ms-caret">▼</span>
+        </button>
+        <div class="ms-dropdown" id="ms-year-dropdown">
+          <div class="ms-actions">
+            <button class="ms-action-btn" data-filter="year" data-action="all">All</button>
+            <button class="ms-action-btn" data-filter="year" data-action="none">None</button>
+          </div>
+          <div class="ms-list" id="ms-year-list"></div>
+          <div class="ms-footer" id="ms-year-footer">0 selected</div>
+        </div>
+      </div>
+
+      <!-- Month multi-select -->
+      <div class="filter-group" id="fg-month">
+        <label>Month</label>
+        <button class="ms-trigger" id="ms-month-trigger" aria-haspopup="listbox">
+          <span class="ms-label">All Months</span>
+          <span class="ms-caret">▼</span>
+        </button>
+        <div class="ms-dropdown" id="ms-month-dropdown">
+          <div class="ms-actions">
+            <button class="ms-action-btn" data-filter="month" data-action="all">All</button>
+            <button class="ms-action-btn" data-filter="month" data-action="none">None</button>
+          </div>
+          <div class="ms-list" id="ms-month-list"></div>
+          <div class="ms-footer" id="ms-month-footer">0 selected</div>
+        </div>
+      </div>
+
+      <!-- Airline multi-select -->
+      <div class="filter-group" id="fg-carrier">
+        <label>Airline</label>
+        <button class="ms-trigger" id="ms-carrier-trigger" aria-haspopup="listbox">
+          <span class="ms-label">All Airlines</span>
+          <span class="ms-caret">▼</span>
+        </button>
+        <div class="ms-dropdown" id="ms-carrier-dropdown">
+          <div class="ms-search"><input type="text" placeholder="Search airlines…" id="ms-carrier-search" /></div>
+          <div class="ms-actions">
+            <button class="ms-action-btn" data-filter="carrier" data-action="all">All</button>
+            <button class="ms-action-btn" data-filter="carrier" data-action="none">None</button>
+          </div>
+          <div class="ms-list" id="ms-carrier-list"></div>
+          <div class="ms-footer" id="ms-carrier-footer">0 selected</div>
+        </div>
+      </div>
+
+      <!-- Airport multi-select -->
+      <div class="filter-group" id="fg-airport">
+        <label>Airport</label>
+        <button class="ms-trigger" id="ms-airport-trigger" aria-haspopup="listbox">
+          <span class="ms-label">All Airports</span>
+          <span class="ms-caret">▼</span>
+        </button>
+        <div class="ms-dropdown" id="ms-airport-dropdown">
+          <div class="ms-search"><input type="text" placeholder="Search airports…" id="ms-airport-search" /></div>
+          <div class="ms-actions">
+            <button class="ms-action-btn" data-filter="airport" data-action="all">All</button>
+            <button class="ms-action-btn" data-filter="airport" data-action="none">None</button>
+          </div>
+          <div class="ms-list" id="ms-airport-list"></div>
+          <div class="ms-footer" id="ms-airport-footer">0 selected</div>
+        </div>
+      </div>
+
+      <button class="btn-reset" id="btn-reset-filters">↺ Reset</button>
+    </div>
+
+    <div class="topbar-right">
+      <span class="data-badge" id="data-badge">0 records</span>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <!-- Side nav -->
+    <nav class="sidenav">
+      <div class="nav-section-label">Navigation</div>
+      <div class="nav-item active" data-page="p01"><span class="nav-icon">🏠</span><span>Executive Overview</span><span class="nav-num">01</span></div>
+      <div class="nav-item" data-page="p02"><span class="nav-icon">🔍</span><span>Delay Causes</span><span class="nav-num">02</span></div>
+      <div class="nav-item" data-page="p03"><span class="nav-icon">✈️</span><span>Airline Performance</span><span class="nav-num">03</span></div>
+      <div class="nav-item" data-page="p04"><span class="nav-icon">📍</span><span>Airport Intelligence</span><span class="nav-num">04</span></div>
+      <div class="nav-item" data-page="p05"><span class="nav-icon">📈</span><span>Trends &amp; Seasonality</span><span class="nav-num">05</span></div>
+      <div class="nav-item" data-page="p06"><span class="nav-icon">🚨</span><span>Risk &amp; Opportunity</span><span class="nav-num">06</span></div>
+      <div class="nav-item" data-page="p07"><span class="nav-icon">💡</span><span>Insights &amp; Recs</span><span class="nav-num">07</span></div>
+    </nav>
+
+    <!-- Page area -->
+    <main class="page-area">
+      <div id="p01" class="page active"></div>
+      <div id="p02" class="page"></div>
+      <div id="p03" class="page"></div>
+      <div id="p04" class="page"></div>
+      <div id="p05" class="page"></div>
+      <div id="p06" class="page"></div>
+      <div id="p07" class="page"></div>
+    </main>
+
+  </div>
+</div>
+
+<!-- ═══════════════ CDN SCRIPTS ══════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.umd.min.js"></script>
+
+<!-- App scripts -->
+<script src="js/data.js"></script>
+<script src="js/pages/p01.js"></script>
+<script src="js/pages/p02.js"></script>
+<script src="js/pages/p03.js"></script>
+<script src="js/pages/p04.js"></script>
+<script src="js/pages/p05.js"></script>
+<script src="js/pages/p06.js"></script>
+<script src="js/pages/p07.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
